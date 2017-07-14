@@ -1,4 +1,4 @@
-Language used: C++
+//Language used: C++
 
 class Solution {
 public:
