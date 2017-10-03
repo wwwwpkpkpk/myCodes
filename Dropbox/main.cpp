@@ -132,14 +132,22 @@ void readFile(BSTree &tList, ifstream &inFile1){
 
 void readSecFile(BSTree &tList, ifstream &inFile2) {
     string newStr, strTemp;
+    int ascii;
 
     while(inFile2 >> newStr) {
         strTemp = newStr;
+        ascii = static_cast<int>(strTemp[0]);
 
         if(newStr.length() > 16) {
             cout << "ERROR - symbol maximum length 16: " << newStr << endl;
         }else {
-            if(strTemp[0] == '@') {
+
+        }
+    }
+}
+
+void expEval(string s) const {
+    if(strTemp[0] == '@') {
             cout << strTemp << " Indirect Addressing" << endl;
             }else if(strTemp[0] == '#') {
                 cout << strTemp << " Immediate Addressing" << endl;
@@ -160,10 +168,4 @@ void readSecFile(BSTree &tList, ifstream &inFile2) {
                     }
                 }
             }
-        }
-    }
-}
-
-void expEval(string s) const {
-
 }
