@@ -30,20 +30,20 @@ void readFile(BSTree &, ifstream &);
 void readSecFile(BSTree &, ifstream &);
 bool isSymbolValid(string );
 bool isNum(const string &s);
-void expEval(string ) const;
+void expEval(string );
 
 int main(int argc, char *argv[])
 {
     ifstream inFile1, inFile2;
     BSTree tList;
-
+    
     //Get file name from command line or user defined data
     getFilename(argc, argv, inFile1, inFile2);
-
+    
     readFile(tList, inFile1);
-
+    
     readSecFile(tList, inFile2);
-
+    
     inFile1.close();
     inFile2.close();
     return 0;
@@ -51,17 +51,17 @@ int main(int argc, char *argv[])
 
 void getFilename(int argc, char *argv[], ifstream &file1, ifstream &file2) {
     string newFile;
-
+    
     if(argc == 2) {
         newFile = argv[1];
     } else {
         cout << "Please enter the name of the files(filename.dat/txt): ";
         cin >> newFile;
     }
-
+    
     file1.open("symtable.dat");
     file2.open(newFile.c_str());
-
+    
     if(!file1 || !file2) {
         cout << "The input file is invalid please check: " << newFile << endl;
     }
@@ -89,12 +89,12 @@ void readFile(BSTree &tList, ifstream &inFile1){
     bool found;
     float newValue;
     int ascii;
-
+    
     //read the input file line by line and insert values after checking data validation
     while(inFile1 >> newStr >> newRflag >> newValue) {
         //Check the first letter
         ascii = static_cast<int>(newStr[0]);
-        if(ascii >= 48 && ascii <= 57) {
+        if(ascii < 65 || (ascii > 90 && ascii < 97) || ascii > 122) {
             cout << "ERROR - symbol must start with a letter: " << newStr << endl;
         }else {
             //Check maximum length of symbol
@@ -132,40 +132,31 @@ void readFile(BSTree &tList, ifstream &inFile1){
 
 void readSecFile(BSTree &tList, ifstream &inFile2) {
     string newStr, strTemp;
-    int ascii;
-
+    
     while(inFile2 >> newStr) {
         strTemp = newStr;
-        ascii = static_cast<int>(strTemp[0]);
-
-        if(newStr.length() > 16) {
-            cout << "ERROR - symbol maximum length 16: " << newStr << endl;
-        }else {
-
+        
+        if(strTemp[0] != '#' || (strTemp[0] < '0' && strTemp[0] > '9') || (strTemp[0] < '@' && strTemp[0] > 'Z')) {
+            cout << "ERROR - expression " << strTemp << " has invalid start" << endl;
+        } else {
+            if(strTemp.length() > 13) {
+                cout << "ERROR - expression " << strTemp << " exceeds maximum length" << endl;
+            }else {
+                expEval(strTemp);
+            }
         }
     }
 }
 
-void expEval(string s) const {
-    if(strTemp[0] == '@') {
-            cout << strTemp << " Indirect Addressing" << endl;
-            }else if(strTemp[0] == '#') {
-                cout << strTemp << " Immediate Addressing" << endl;
-            }else if(strTemp[0] == '=') {
-                if(strTemp[1] == 'C') {
-                    cout << strTemp << " Character Literal" << endl;
-                } else if(strTemp[1] == 'X') {
-                    cout << strTemp << " Hexdecimal Literal" << endl;
-                }
-            } else {
-                if(isNum(strTemp)) {
-                    cout << strTemp << " Immediate Addressing" << endl;
-                }else {
-                    if(strTemp[strTemp.length() - 1] == 'X') {
-                        cout << strTemp << " Indexed Addressing" << endl;
-                    }else {
-                        expEval(strTemp);
-                    }
-                }
-            }
+void expEval(string s) {
+    string sym1, sym2;
+    
+    
+    
+    
+    
+    
 }
+
+
+
