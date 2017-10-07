@@ -30,7 +30,8 @@ void readFile(BSTree &, ifstream &);
 void readSecFile(BSTree &, ifstream &);
 bool isSymbolValid(string );
 bool isNum(const string &s);
-void expEval(string );
+void expEval(BSTree , string );
+void parse(string , string & , string & , char & , bool & );
 
 int main(int argc, char *argv[])
 {
@@ -142,21 +143,101 @@ void readSecFile(BSTree &tList, ifstream &inFile2) {
             if(strTemp.length() > 13) {
                 cout << "ERROR - expression " << strTemp << " exceeds maximum length" << endl;
             }else {
-                expEval(strTemp);
+                expEval(tList, strTemp);
             }
         }
     }
 }
 
-void expEval(string s) {
+void expEval(BSTree tList, string s) {
+    int addr = 0, num1 = 0, num2 = 0;
+    char oprand = '\0';
+    string temp = s;
     string sym1, sym2;
+    bool split = false, dir = true, indir = false, imm = false, indx = false;
     
     
+    /* Invalid Addressing: 
+     #WHITE,X   ERROR
+     @WHITE,X   ERROR
+     @120       ERROR
+     #100       VALID
+     =X"012A"   ERROR
+     =X'72A'    VALID
+     =C"012A"   ERROR
+     =C'012A'   VALID
+    */
     
-    
+    if(temp[0] == '=') { // Literal
+        temp.erase(temp.begin());
+        if(temp[0] == 'C') {
+            temp.erase(temp.begin());
+            if(temp[0] == '\'' && temp[*temp.end()] == '\'') {
+                // display literal table
+                temp.erase(temp.begin(), temp.end());
+                cout << temp << "  " << temp.length() << "  " << addr << endl;
+                addr++;
+            }else {
+                cout << "ERROR - expression " << s << " with invalid literal format" << endl;
+            }
+        } else if(temp[0] == 'X') {
+            temp.erase(temp.begin());
+            if(temp[0] == '\'' && temp[*temp.end()] == '\'') {
+                // display literal table
+                temp.erase(temp.begin(), temp.end());
+                cout << hex << temp << "  " << temp.length() << "  " << addr << endl;
+                addr++;
+            }else {
+                cout << "ERROR - expression " << s << " with invalid literal format" << endl;
+            }
+        }
+        
+    }else {
+        parse(temp, sym1, sym2, oprand, split);
+        if(!split) {
+            if(isNum(sym1) && isNum(sym2)) {
+                cout << "ERROR - expression " << s << "has immediate addressing in indrect addressing" << endl;
+            }else if(sym2[0] == '@' || sym2[0] == '#') {
+                cout << "ERROR - expression" << s << " has operation within" << endl;
+            } else {
+                if(sym1[*sym1.end() - 1] == ',') {
+                    cout << " ERROR - expression " << s  << " has invalid index addressing" << endl;
+                }else {
+                    if(sym1[0] == '@') {
+                        dir = false; indir = true;
+                    }else if(sym1[0] == '#') {
+                        dir = false; imm = true;
+                    }
+                    
+                    if(!tList.Tsearch(sym1, true)) {
+                        if(!isNum(sym1)) {
+                            cout << "ERROR - expression" << s << " not found in symbol table" << endl;
+                        }else {
+                            dir = false; imm = true;
+                            cout << s <<  << endl;
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     
 }
 
+void parse(string line, string &arg1, string &arg2, char &oprand, bool & split) {
+    for(int i = 0; i < line.length(); i++) {
+        if(line[i] == '+' || line[i] == '-') {
+            split = true;
+            oprand = line[i];
+            line.erase(line.begin() + i);
+        }
+        if(!split) {
+            arg1 += line[i];
+        }else {
+            arg2 += line[i];
+        }
+    }
+}
 
 
