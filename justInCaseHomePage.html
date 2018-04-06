@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
+<link rel="stylesheet" href="w3.css">
+<body style="background-color:rgb(70,30,30);">
+<style>
+  #backcolor{
+	 color: rgb(70,30,30);
+  }
+	
+  #forecolor{
+	 color: rgb(198,159,61);
+  }
+
+  #map{
+     height: 300px;
+  }
+  hrml, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+  }
+  .controls {
+	  margin-top: 10px;
+	  border: 1px solid transparent;
+	  border-radius: 2px 0 0 2px;
+	  box-sizing: border-box;
+	  -moz-box-sizing: border-box;
+	  height: 32px;
+	  outline: none;
+	  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  #origin-input,
+  #destination-input {
+	  background-color: #fff;
+	  font-family: Roboto;
+	  font-size: 15px;
+	  font-weight: 300;
+	  margin-left: 12px;
+	  padding: 0 11px 0 13px;
+	  text-overflow: ellipsis;
+	  width: 200px;
+  }
+  
+  #origin-input: focus,
+  #destination-input: focus {
+	  border-color: #4d90fe;
+  }
+</style>
+
+<!-- Navigation -->
+<nav class="w3-bar w3-black">
+  <a href="homepage.html" class="w3-button w3-bar-item" style="font-size: 19px; color: rgb(198,158,61)">
+    Home
+  </a>
+  <a href="usrLogin_C.html" class="w3-button w3-bar-item" style="font-size: 19px; color: rgb(198,158,61)">
+    Login/Sign-up
+  </a>
+  <a href="contact.html" class="w3-button w3-bar-item" style="font-size: 19px; color: rgb(198,158,61)">
+    Contact
+  </a>
+  <a href="faq.html" class="w3-button w3-bar-item" style="font-size: 19px; color: rgb(198,158,61)">
+    FAQ
+  </a>
+</nav>
+
+<!-- Slide Show -->
+
+<section class="w3-container w3-padding-12 w3-center w3-black w3-xlarge">
+  <img class="mySlides" src="images/slide1.png"
+  style="align:center;width:100%;height:500px;">
+  <img class="mySlides" src="images/slide2.png"
+  style="align:center;width:100%;height:500px;">
+  <img class="mySlides" src="images/slide3.jpg"
+  style="align:center;width:100%;height:500px;">
+  <div "height:20px;
+	align:center;
+    background: black;
+    background: linear-gradient(black, white);">
+  </div>
+</section>
+
+ 
+
+<!-- Main Actions -->
+<div style="background-color:navy;color:white;padding:20px;">
+  <h2><center>Schedule trip</center></h2>
+  <div style="background-color:white;color:navy;padding:20px;">
+    <p>Book now</p>
+    <p>
+            <form>
+                    <strong>From</strong>
+                    <input id="origin-input" class="controls" type="text" placeholder= "Enter a starting address">
+					&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<strong>Leaving</strong>
+                    <input id="destination-input" class="controls" type="text" placeholder= "Enter a destination address">
+					&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <br>
+					
+					<strong>At</strong>
+                    <input type="datetime-local" name="leaving">
+					&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <strong>At</strong>
+                    <input type="datetime-local" name="leaving">
+					&nbsp;&nbsp;&nbsp;  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					
+                    <div id="map"></div>
+                    <script>
+			    function initMap() {
+				    var map = new google.maps.Map(document.getElementById('map'), {
+					    mapTypeControl: false,
+					    center: {lat: 44.311, lng: -96.798},
+					    zoom: 15,
+					    mapTypeId: 'roadmap'
+				    });
+							
+				    new AutocompleteDirectionsHandler(map);
+			    }
+						
+			    function AutocompleteDirectionsHandler(map) {
+				    this.map = map;
+				    this.originPlaceId = null;
+				    this.destinationPlaceId = null;
+				    this.travelMode = 'DRIVING';
+				    var originInput = document.getElementById('origin-input');
+				    var destinationInput = document.getElementById('destination-input');
+				    this.directionsService = new google.maps.DirectionsService;
+				    this.directionsDisplay = new google.maps.DirectionsRenderer;
+				    this.directionsDisplay.setMap(map);
+							
+				    var originAutocomplete = new google.maps.places.Autocomplete(
+					    originInput, {placeIdOnly: true});
+				    var destinationAutocomplete = new google.maps.places.Autocomplete(
+					    destinationInput, {placeIdOnly: true});
+								
+				    this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
+				    this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
+								
+				    this.map.controls.push(originInput);	
+				    this.map.controls.push(destinationInput);
+			    }
+						
+			    AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
+				    var me = this;
+				    autocomplete.bindTo('bounds', this.map);
+				    autocomplete.addListener('place_changed', function() {
+					    var place = autocomplete.getPlace();
+					    if(!place.place_id) {
+						    window.alert("Please select an option from the dropdown list.");
+						    return;
+					    }
+					    if(mode === 'ORIG') {
+						    me.originPlaceId = place.place_id;
+					    }else {
+						    me.destinationPlaceId = place.place_id;
+					    }
+					    me.route();
+				    });
+			    };
+						
+			    AutocompleteDirectionsHandler.prototype.route = function() {
+				    if(!this.originPlaceId || !this.destinationPlaceId) {
+					    return;
+				    }
+				    var me = this;
+							
+				    this.directionsService.route({
+					    origin: {'placeId': this.originPlaceId},
+					    destination: {'placeId': this.destinationPlaceId},
+					    travelMode: this.travelMode
+				    }, function(response, status) {
+					    if (status === 'OK') {
+						    me.directionsDisplay.setDirections(response);
+					    } else {	
+						    window.alert('Directions request failed due to ' + status);
+					    }
+				    });
+			    };  
+                    </script>
+                    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBxXH4mhMRJIT6Mwy35A0mK7fdaG1JF8lI&libraries=places&callback=initMap" async defer>
+                    </script>
+            </form>
+            <form>
+                    <br><strong>How many travelers</strong><br>
+                    <input type="number" name="quantity" min="1" max="30" value="1"><br><br>
+                    <input type="checkbox" > Need handicap bus <br><br>
+                    <a href="afterscheduletrip.html">
+					<input style="height:50px;width:200px" type="button"  value="Schedule Trip!">
+					</a>
+			</form>
+    </p>
+
+  </div>
+</div>   
+  
+  
+</section>  
+  
+<!-- Guide -->
+<section class="w3-row-padding w3-center w3-light-grey">
+  <article class="w3-third" style="width:30%">
+    <p>Call</p>
+    <img src="images/call.png" alt="call" style="height:100px;width:100px;">
+    <p>Call</p>
+  </article>
+  <article class="w3-third" style="width:5%">
+	<div style="height:50px;"></div>
+    <img src="images/arrow-right.png" alt="arrow-right" style="align:center;height:100px;width:100px;">
+  </article>
+  <article class="w3-third" style="width:30%">
+    <p>Ride</p>
+    <img src="images/ride.png" alt="ride" style="height:100px;width:100px;">
+    <p>Ride</p>
+  </article>
+  <article class="w3-third" style="width:5%">
+	<div style="height:50px;"></div>
+    <img src="images/arrow-right.png" alt="arrow-right" style="align:center;height:100px;width:100px;">
+  </article>
+  <article class="w3-third" style="width:30%">
+    <p>Arrive</p>
+    <img src="images/arrive.png" alt="arrive" style="height:100px;width:100px;">
+    <p>Arrive</p>
+  </article>
+</section>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-12 w3-center w3-xlarge" style="background-color: rgb(70,30,30)">
+  <style>
+	a:link {
+		color: black; 
+		background-color: transparent; 
+		text-decoration: none;
+	}
+
+	a:visited {
+		color: grey;
+		background-color: transparent;
+		text-decoration: none;
+	}
+
+	a:hover {
+		color: black;
+		background-color: transparent;
+		text-decoration: underline;
+	}
+
+	a:active {
+		color: blue;
+		background-color: transparent;
+		text-decoration: underline;
+	}
+</style>
+  <a href="#home" class="w3-justify w3-center">
+	<div style="height:10px;"></div>
+    <img src="images/smallestlogo.png" alt="company logo" class="imglogo" style="width:77px;height:76px">
+	<p style="font-size:50%;">Ride's R Us</p>
+  </a>
+</footer>
+
+<script>
+// Automatic Slideshow - change image every 3 seconds
+var myIndex = 0;
+carousel();
+
+function carousel() {
+    var i;
+    var x = document.getElementsByClassName("mySlides");
+    for (i = 0; i < x.length; i++) {
+       x[i].style.display = "none";
+    }
+    myIndex++;
+    if (myIndex > x.length) {myIndex = 1}
+    x[myIndex-1].style.display = "block";
+    setTimeout(carousel, 3000);
+}
+</script>
+
+<script>
+function includeHTML() {
+  var z, i, elmnt, file, xhttp;
+  /*loop through a collection of all HTML elements:*/
+  z = document.getElementsByTagName("*");
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    /*search for elements with a certain atrribute:*/
+    file = elmnt.getAttribute("w3-include-html");
+    if (file) {
+      /*make an HTTP request using the attribute value as the file name:*/
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          if (this.status == 200) {elmnt.innerHTML = this.responseText;}
+          if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
+          /*remove the attribute, and call this function once more:*/
+          elmnt.removeAttribute("w3-include-html");
+          includeHTML();
+        }
+      } 
+      xhttp.open("GET", file, true);
+      xhttp.send();
+      /*exit the function:*/
+      return;
+    }
+  }
+}
+</script>
+
+</body>
+</html>
+
+
+
